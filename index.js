@@ -1,26 +1,26 @@
 import axios from "axios";
-import cheerio from "cheerio";
 
 async function parse(url){
-    try{
+    try {
         const response = await axios.get(url);
+        const html = response.data;
 
-        const $ = cheerio.load(response.data);
+        const cleanedHtml = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
 
-        $('.integration-card-copy').each((index, element) => {
-            const h4Text = $(element).find('h4').text();
-            const regExp = new RegExp('^SE::');
-            if (regExp.test(h4Text)){
-                console.log(`${h4Text},${$(element).find('div:not([class])').text()}`);
+        const textWithoutTags = cleanedHtml.replace(/<\/?[a-z][^>]*>/gi, ' ');
 
-            }
-        });
+        const wordRegex = /\b\w+\b/g;
 
-    }catch(err){
+        const wordsArray = textWithoutTags.match(wordRegex);
+
+        console.log(`Количество слов без HTML тегов: ${wordsArray.length}`);
+    }
+    catch(err){
         console.error(`Ошибка при запросе: ${err.message}`);
     }
-    
 }
 
 
 parse('https://a-parser.com/parsers/');
+
+
